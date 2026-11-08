@@ -97,6 +97,8 @@
     <label>Classi / destinatari<input id="fClassi" placeholder="Es. 4A, 4B"></label>
   </div>
   <label>N° circolare / allegato PDF<input id="fNum" placeholder="Es. Circ. n. 45 – circolare45.pdf"></label>
+  <label>Allegato (PDF o immagine, max 10 MB)<input type="file" id="fFile" accept=".pdf,image/*"></label>
+<label class="chk" id="fRimBox" hidden><input type="checkbox" id="fRimuovi"> Rimuovi l’allegato attuale (<span id="fFileInfo"></span>)</label>
   <label>Descrizione<textarea id="fDesc" rows="3"></textarea></label>
   <label class="chk"><input type="checkbox" id="fFirma"> Richiede presa visione (firma)</label>
   <label class="chk"><input type="checkbox" id="fUrg"> Segna come urgente</label>

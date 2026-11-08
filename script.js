@@ -47,6 +47,27 @@ function rel(s) {
 function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
 
 
+const DB = () => new Promise((ok, ko) => {
+  const r = indexedDB.open('planner_files', 1);
+  r.onupgradeneeded = () => r.result.createObjectStore('f');
+  r.onsuccess = () => ok(r.result);
+  r.onerror = () => ko(r.error);
+});
+async function fPut(id, blob) {
+  const db = await DB();
+  return new Promise((ok, ko) => { const t = db.transaction('f', 'readwrite'); t.objectStore('f').put(blob, id); t.oncomplete = ok; t.onerror = () => ko(t.error); });
+}
+async function fGet(id) {
+  const db = await DB();
+  return new Promise((ok, ko) => { const q = db.transaction('f').objectStore('f').get(id); q.onsuccess = () => ok(q.result); q.onerror = () => ko(q.error); });
+}
+async function fDel(id) {
+  const db = await DB();
+  return new Promise((ok, ko) => { const t = db.transaction('f', 'readwrite'); t.objectStore('f').delete(id); t.oncomplete = ok; t.onerror = () => ko(t.error); });
+}
+const dim = n => n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.round(n / 1024) + ' KB';
+
+
 function applica() {
   const r = document.documentElement;
   if (imp.tema === 'auto') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', imp.tema);
@@ -133,6 +154,7 @@ function dettaglio(id) {
   let h = '<p class="meta">' + t.n + ' · ' + fmtLungo(e.data) + (e.ora ? ' · ore ' + e.ora : '') + ' (' + rel(e.data) + ')</p>';
   if (e.classi) h += '<p>👥 ' + esc(e.classi) + '</p>';
   if (e.num) h += '<p>📎 ' + esc(e.num) + '</p>';
+  if (e.file) h += '<p>📄 ' + esc(e.file.nome) + ' <span class="mu">(' + dim(e.file.size) + ')</span></p>';
   if (e.desc) h += '<p>' + esc(e.desc).replace(/\n/g, '<br>') + '</p>';
   if (e.firma) {
     h += '<h3>Prese visione (' + e.firme.length + ')</h3>';
@@ -141,6 +163,15 @@ function dettaglio(id) {
   $('dBody').innerHTML = h;
   const a = $('dAzioni'); a.innerHTML = '';
   const btn = (txt, cls, fn) => { const b = document.createElement('button'); b.className = 'btn ' + cls; b.textContent = txt; b.onclick = fn; a.appendChild(b); };
+  if (e.file) btn('📄 Apri allegato', 'pr', async () => {
+    const w = window.open('', '_blank');
+    const b = await fGet(e.id);
+    if (!b) { if (w) w.close(); toast('Allegato non trovato'); return; }
+    const u = URL.createObjectURL(b);
+    if (w) w.location = u;
+    else { const a = document.createElement('a'); a.href = u; a.download = e.file.nome; a.click(); }
+    setTimeout(() => URL.revokeObjectURL(u), 60000);
+  });
   if (e.firma && puoModificare()) {
     if (firmato(e)) btn('Togli la mia firma', '', () => { e.firme = e.firme.filter(f => f.nome.toLowerCase() !== imp.nome.trim().toLowerCase()); salva(); tutto(); dettaglio(id); toast('Firma rimossa'); });
     else btn('✍️ Firma presa visione', 'pr', () => {
@@ -150,7 +181,7 @@ function dettaglio(id) {
   }
   if (puoModificare()) {
     btn('Modifica', '', () => { $('dlgDet').close(); apriForm(e); });
-    btn('Elimina', 'danger', () => { if (confirm('Eliminare “' + e.titolo + '”?')) { eventi = eventi.filter(x => x.id !== id); salva(); $('dlgDet').close(); tutto(); toast('Eliminato'); } });
+    btn('Elimina', 'danger', () => { if (confirm( fDel(id).catch(() => {});'Eliminare “' + e.titolo + '”?')) { eventi = eventi.filter(x => x.id !== id); salva(); $('dlgDet').close(); tutto(); toast('Eliminato'); } });
   }
   btn('Chiudi', '', () => $('dlgDet').close());
   if (!$('dlgDet').open) $('dlgDet').showModal();
@@ -162,14 +193,24 @@ function apriForm(e) {
   $('fData').value = e ? e.data : sel; $('fOra').value = e ? e.ora : '';
   $('fClassi').value = e ? e.classi : ''; $('fNum').value = e ? e.num : '';
   $('fDesc').value = e ? e.desc : ''; $('fFirma').checked = e ? e.firma : false; $('fUrg').checked = e ? e.urgente : false;
+  $('fFile').value = ''; $('fRimuovi').checked = false;
+  $('fRimBox').hidden = !(e && e.file);
+  $('fFileInfo').textContent = e && e.file ? e.file.nome : '';
   $('dlgForm').showModal();
 }
-$('fSalva').onclick = () => {
+$('fSalva').onclick = async () => {
   const t = $('fTit').value.trim(), d = $('fData').value;
   if (!t || !d) { toast('Titolo e data sono obbligatori'); return; }
+  const f = $('fFile').files[0];
+  if (f && f.size > 10 * 1024 * 1024) { toast('File troppo grande (max 10 MB)'); return; }
   const dati = {titolo:t, tipo:$('fTipo').value, data:d, ora:$('fOra').value, classi:$('fClassi').value.trim(), num:$('fNum').value.trim(), desc:$('fDesc').value.trim(), firma:$('fFirma').checked, urgente:$('fUrg').checked};
-  if (editId) Object.assign(eventi.find(x => x.id === editId), dati);
-  else eventi.push({id: Date.now(), firme: [], ...dati});
+  let ev;
+  if (editId) { ev = eventi.find(x => x.id === editId); Object.assign(ev, dati); }
+  else { ev = {id: Date.now(), firme: [], ...dati}; eventi.push(ev); }
+  try {
+    if (f) { await fPut(ev.id, f); ev.file = {nome: f.name, tipo: f.type, size: f.size}; }
+    else if ($('fRimuovi').checked && ev.file) { await fDel(ev.id); delete ev.file; }
+  } catch (err) { toast('Impossibile salvare l’allegato'); }
   salva(); $('dlgForm').close(); sel = d; vista = new Date(d + 'T12:00'); tutto(); toast('Salvato');
 };
 $('fAnnulla').onclick = () => $('dlgForm').close();
@@ -235,6 +276,7 @@ $('fileImporta').onchange = ev => {
 $('btnReset').onclick = () => {
   if (confirm('Cancellare tutti i dati e le impostazioni?')) {
     try { localStorage.removeItem(K_EV); localStorage.removeItem(K_IM); } catch(e) {}
+    indexedDB.deleteDatabase('planner_files');
     location.reload();
   }
 };

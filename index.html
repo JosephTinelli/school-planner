@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-512.png">
+<title>School Planner – Belluzzi da Vinci</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div><h1 id="hTitolo">Calendario</h1><p>Istituto “Belluzzi da Vinci”</p></div>
+    <button class="ghost" id="btnOggi">Oggi</button>
+  </header>
+
+  <main>
+    <section id="v-mese" class="view active">
+      <div class="monthbar">
+        <button class="ghost sq" id="prev" aria-label="Mese precedente">‹</button>
+        <h2 id="meseTitolo"></h2>
+        <button class="ghost sq" id="next" aria-label="Mese successivo">›</button>
+      </div>
+      <div id="filtri" class="chips"></div>
+      <div class="cal" id="griglia"></div>
+      <h3 class="sec" id="giornoTitolo"></h3>
+      <div id="giornoLista"></div>
+    </section>
+
+    <section id="v-agenda" class="view">
+      <input id="cerca" type="search" placeholder="Cerca circolari, classi, impegni…">
+      <label class="chk"><input type="checkbox" id="passati"> Mostra anche gli eventi passati</label>
+      <div id="agendaLista"></div>
+    </section>
+
+    <section id="v-firme" class="view">
+      <div class="card prog"><div id="progTxt"></div><div class="bar"><span id="progBar"></span></div></div>
+      <div id="firmeLista"></div>
+    </section>
+
+    <section id="v-impost" class="view">
+      <div class="card set">
+        <h3>Profilo</h3>
+        <label>Nome e cognome<input id="sNome" placeholder="Es. Mario Rossi"></label>
+        <label>Ruolo
+          <select id="sRuolo"><option value="docente">Docente (può inserire e firmare)</option><option value="studente">Studente (sola lettura)</option></select>
+        </label>
+      </div>
+      <div class="card set">
+        <h3>Aspetto</h3>
+        <label>Tema
+          <select id="sTema"><option value="auto">Automatico</option><option value="light">Chiaro</option><option value="dark">Scuro</option></select>
+        </label>
+        <label>Colore dell’app<div id="sColori" class="swatches"></div></label>
+        <label>La settimana inizia di
+          <select id="sSett"><option value="1">Lunedì</option><option value="0">Domenica</option></select>
+        </label>
+        <label>Dimensione del testo
+          <select id="sTesto"><option value="90">Piccolo</option><option value="100">Medio</option><option value="115">Grande</option></select>
+        </label>
+      </div>
+      <div class="card set">
+        <h3>Dati</h3>
+        <button class="btn" id="btnIcs">📤 Esporta in calendario (.ics)</button>
+        <button class="btn" id="btnBackup">💾 Salva backup (.json)</button>
+        <button class="btn" id="btnImporta">📥 Ripristina backup</button>
+        <input type="file" id="fileImporta" accept=".json" hidden>
+        <button class="btn danger" id="btnReset">🗑 Azzera tutti i dati</button>
+      </div>
+      <p class="mu center">School Planner v2 · dati salvati su questo dispositivo</p>
+    </section>
+  </main>
+
+  <button class="fab" id="fab" aria-label="Aggiungi">+</button>
+
+  <nav class="tabs">
+    <button data-v="mese" class="on"><span>📅</span>Calendario</button>
+    <button data-v="agenda"><span>🗒️</span>Agenda</button>
+    <button data-v="firme"><span>✍️</span>Firme<em id="nBadge" hidden>0</em></button>
+    <button data-v="impost"><span>⚙️</span>Impostazioni</button>
+  </nav>
+</div>
+
+<dialog id="dlgForm">
+  <h3 id="formTitolo">Nuovo elemento</h3>
+  <label>Titolo<input id="fTit"></label>
+  <div class="two">
+    <label>Tipo
+      <select id="fTipo"><option value="circolare">Circolare</option><option value="riunione">Riunione</option><option value="scadenza">Scadenza</option><option value="evento">Evento</option></select>
+    </label>
+    <label>Data<input id="fData" type="date"></label>
+  </div>
+  <div class="two">
+    <label>Ora (facoltativa)<input id="fOra" type="time"></label>
+    <label>Classi / destinatari<input id="fClassi" placeholder="Es. 4A, 4B"></label>
+  </div>
+  <label>N° circolare / allegato PDF<input id="fNum" placeholder="Es. Circ. n. 45 – circolare45.pdf"></label>
+  <label>Descrizione<textarea id="fDesc" rows="3"></textarea></label>
+  <label class="chk"><input type="checkbox" id="fFirma"> Richiede presa visione (firma)</label>
+  <label class="chk"><input type="checkbox" id="fUrg"> Segna come urgente</label>
+  <div class="row"><button class="btn" id="fAnnulla">Annulla</button><button class="btn pr" id="fSalva">Salva</button></div>
+</dialog>
+
+<dialog id="dlgDet">
+  <h3 id="dTit"></h3>
+  <div id="dBody"></div>
+  <div class="row" id="dAzioni"></div>
+</dialog>
+
+<div id="toast"></div>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "School Planner – Belluzzi da Vinci",
+  "short_name": "Planner",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f1ea",
+  "theme_color": "#0f766e",
+  "icons": [
+   
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}

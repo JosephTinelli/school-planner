@@ -36,7 +36,8 @@ function menzioni(t, c) {
   [new RegExp('\\b' + n + '\\s?[ªº°^]?\\s?' + l + '\\b', 'g'),
    new RegExp('\\b' + ROM[n-1] + '\\s?[ªº°^]?\\s?' + l + '\\b', 'g'),
    new RegExp('\\b' + ORD[n-1] + '\\s+' + l + '\\b', 'gi')].forEach(re => { let m; while ((m = re.exec(t))) r.push(m.index); });
-  return r.sort((a, b) => a - b);
+  [new RegExp('\\b(?:classi|classe)\\s+(?:' + ORD[n-1].replace(/a$/, 'e') + '|' + ROM[n-1] + '|' + n + ')\\b', 'gi')].forEach(re => { let m; while ((m = re.exec(t))) r.push(m.index); });
+   return r.sort((a, b) => a - b);
 }
 function frasi(t) {                       
   const r = []; let a = 0;
@@ -95,7 +96,7 @@ async function estrai(t, classi, titolo, mute) {
       i = r.ult;                                          
     }
   }
-  if (!out.length && !classi.length) {                    
+  if (!out.length) {                    
       const r = cercaImpegno(frs, i, frs[i].a);
       if (r) { out.push({titolo, tipo: tipoDi(r.uso.join(' ')), data: r.inizio, fine: r.fine, ora: r.ora, classi: '', num, firma, urgente, desc: frs[i].testo.trim().slice(0, 250)}); break; }
     }

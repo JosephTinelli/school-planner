@@ -9,7 +9,7 @@ const ld = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } 
 const sv = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} };
 const caricaJs = u => new Promise((ok, ko) => { const s = document.createElement('script'); s.src = u; s.onload = ok; s.onerror = ko; document.head.appendChild(s); });
 const pausa = ms => new Promise(r => setTimeout(r, ms));
-const inGiorno = (e, s) => e.data <= s && s <= (e.fine || e.data);
+
 
 
 const annoDef = mo => { const n = new Date(); return n.getFullYear() + (mo < n.getMonth() - 1 ? 1 : 0); };

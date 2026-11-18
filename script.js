@@ -14,6 +14,7 @@ const fmt = s => new Date(s+'T12:00').toLocaleDateString('it-IT', {weekday:'shor
 const fmtLungo = s => new Date(s+'T12:00').toLocaleDateString('it-IT', {weekday:'long', day:'numeric', month:'long'});
 const ordina = (a,b) => (a.data + (a.ora||'')).localeCompare(b.data + (b.ora||''));
 const dim = n => n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.round(n / 1024) + ' KB';
+const inGiorno = (e, s) => e.data <= s && s <= (e.fine || e.data);
 
 let eventi = [];
 let imp = {nome:'', ruolo:'docente', tema:'auto', colore:'#0f766e', sett:1, testo:'100'};

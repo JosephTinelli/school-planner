@@ -20,7 +20,7 @@ let imp = {nome:'', ruolo:'docente', tema:'auto', colore:'#0f766e', sett:1, test
 let vista = new Date(), sel = iso(new Date()), editId = null;
 let attivo = {circolare:1, riunione:1, scadenza:1, evento:1};
 
-/* ---------- Dati ---------- */
+
 function carica() {
   try { const i = localStorage.getItem(K_IM); if (i) imp = {...imp, ...JSON.parse(i)}; } catch(e) {}
   try { const r = localStorage.getItem(K_EV); if (r) { eventi = JSON.parse(r); return; } } catch(e) {}
@@ -47,7 +47,7 @@ function rel(s) {
 }
 function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
 
-/* ---------- Allegati (IndexedDB) ---------- */
+
 const DB = () => new Promise((ok, ko) => {
   const r = indexedDB.open('planner_files', 1);
   r.onupgradeneeded = () => r.result.createObjectStore('f');
@@ -67,7 +67,7 @@ async function fDel(id) {
   return new Promise((ok, ko) => { const t = db.transaction('f', 'readwrite'); t.objectStore('f').delete(id); t.oncomplete = ok; t.onerror = () => ko(t.error); });
 }
 
-/* ---------- Impostazioni applicate ---------- */
+
 function applica() {
   const r = document.documentElement;
   if (imp.tema === 'auto') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', imp.tema);
@@ -76,7 +76,7 @@ function applica() {
   document.querySelector('meta[name=theme-color]').content = imp.colore;
 }
 
-/* ---------- Render ---------- */
+
 function card(e) {
   const t = TIPI[e.tipo], ok = e.firma && firmato(e);
   return '<article class="card ev" data-id="' + e.id + '" style="--t:' + t.c + '">' +
@@ -99,14 +99,14 @@ function renderMese() {
   const righe = Math.ceil((off + new Date(y, m+1, 0).getDate()) / 7);
   for (let i = 0; i < righe * 7; i++) {
     const d = new Date(y, m, 1 - off + i), s = iso(d);
-    const ev = eventi.filter(e => e.data === s && attivo[e.tipo]);
+    const ev = eventi.filter(e => inGiorno(e, s) && attivo[e.tipo]);
     h += '<button class="d' + (d.getMonth() !== m ? ' out' : '') + (s === oggi ? ' today' : '') + (s === sel ? ' sel' : '') + '" data-d="' + s + '"><b>' + d.getDate() + '</b><i>' +
       ev.slice(0,3).map(e => '<u style="--t:' + TIPI[e.tipo].c + '"></u>').join('') + '</i></button>';
   }
   $('griglia').innerHTML = h;
   $('griglia').querySelectorAll('.d').forEach(b => b.onclick = () => { sel = b.dataset.d; renderMese(); });
   $('giornoTitolo').textContent = fmtLungo(sel);
-  const lista = eventi.filter(e => e.data === sel && attivo[e.tipo]).sort(ordina);
+  const lista = eventi.filter(e => inGiorno(e, sel) && attivo[e.tipo]).sort(ordina);
   $('giornoLista').innerHTML = lista.length ? lista.map(card).join('') : '<p class="empty">Nessun impegno in questa giornata.</p>';
   collega($('giornoLista'));
 }
@@ -147,13 +147,14 @@ function tutto() {
 }
 function cambiaImp() { salva(); applica(); tutto(); }
 
-/* ---------- Dettaglio e form ---------- */
+
 function dettaglio(id) {
   const e = eventi.find(x => x.id === id); if (!e) return;
   const t = TIPI[e.tipo];
   $('dTit').textContent = e.titolo;
   let h = '<p class="meta">' + t.n + ' · ' + fmtLungo(e.data) + (e.ora ? ' · ore ' + e.ora : '') + ' (' + rel(e.data) + ')</p>';
   if (e.classi) h += '<p>👥 ' + esc(e.classi) + '</p>';
+  if (e.fine) h += '<p>📆 Fino al ' + fmtLungo(e.fine) + '</p>';
   if (e.num) h += '<p>📎 ' + esc(e.num) + '</p>';
   if (e.file) h += '<p>📄 ' + esc(e.file.nome) + ' <span class="mu">(' + dim(e.file.size) + ')</span></p>';
   if (e.desc) h += '<p>' + esc(e.desc).replace(/\n/g, '<br>') + '</p>';
@@ -216,7 +217,7 @@ $('fSalva').onclick = async () => {
 };
 $('fAnnulla').onclick = () => $('dlgForm').close();
 
-/* ---------- Navigazione ---------- */
+
 const TITOLI = {mese:'Calendario', agenda:'Agenda', firme:'Firme', impost:'Impostazioni'};
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
@@ -234,7 +235,7 @@ $('cerca').oninput = renderAgenda; $('passati').onchange = renderAgenda;
 $('filtri').innerHTML = Object.keys(TIPI).map(k => '<label><input type="checkbox" data-k="' + k + '" checked><span style="color:' + TIPI[k].c + '">●</span> ' + TIPI[k].n + '</label>').join('');
 $('filtri').onchange = e => { attivo[e.target.dataset.k] = e.target.checked ? 1 : 0; renderMese(); };
 
-/* ---------- Impostazioni: eventi ---------- */
+
 $('sNome').oninput = e => { imp.nome = e.target.value; cambiaImp(); };
 $('sRuolo').onchange = e => { imp.ruolo = e.target.value; cambiaImp(); };
 $('sTema').onchange = e => { imp.tema = e.target.value; cambiaImp(); };
@@ -282,6 +283,6 @@ $('btnReset').onclick = () => {
   }
 };
 
-/* ---------- Avvio ---------- */
+
 carica(); applica(); renderImp(); tutto();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});

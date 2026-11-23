@@ -67,3 +67,35 @@ dialog h3{margin:0 0 12px}
 #toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--tx);color:var(--bg);padding:9px 16px;border-radius:99px;font-size:.85rem;opacity:0;pointer-events:none;transition:.25s;z-index:20}
 #toast.show{opacity:1;transform:translateX(-50%)}
 [hidden]{display:none!important}
+
+
+.login-overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,var(--bg),color-mix(in srgb,var(--ac) 14%,var(--bg)));padding:20px;overflow:auto}
+.login-box{width:100%;max-width:420px;background:var(--card);border:1px solid var(--bd);border-radius:24px;padding:28px 22px calc(28px + env(safe-area-inset-bottom,0px));box-shadow:0 18px 50px rgba(0,0,0,.18);text-align:center}
+.login-logo{width:72px;height:72px;border-radius:18px;object-fit:cover;margin-bottom:8px}
+.login-box h1{margin:0;font-size:1.55rem;color:var(--acx)}
+.login-sub{margin:4px 0 18px;font-size:.85rem;color:var(--mu)}
+.login-form label{text-align:left;margin-bottom:14px}
+.login-form .btn{margin-top:6px}
+.login-hint{margin:14px 0 4px;font-size:.78rem}
+.login-foot{margin-top:18px;font-size:.72rem}
+
+
+.top-az{display:flex;gap:8px;align-items:center}
+.top-az .ghost{position:relative}
+.top-az em{position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;font-style:normal;font-size:.62rem;border-radius:99px;padding:0 5px;min-width:16px;text-align:center}
+
+
+.small{font-size:.78rem;line-height:1.35}
+
+
+#postaLista{margin:8px 0 12px}
+.mail-item{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+.mail-item:hover{border-color:var(--acx)}
+.mail-item .ml-oggetto{font-weight:600;font-size:.95rem;color:var(--tx);margin:0 0 2px}
+.mail-item .ml-meta{font-size:.75rem;color:var(--mu);margin:0}
+.mail-item .ml-ante{font-size:.82rem;color:var(--tx);margin:6px 0 0;opacity:.85;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mail-item.processata{opacity:.5;border-style:dashed}
+
+
+.autofilled{border-color:var(--acx)!important;background:color-mix(in srgb,var(--acx) 8%,var(--card))!important;box-shadow:0 0 0 2px color-mix(in srgb,var(--acx) 22%,transparent)}
+#fAutoFillInfo{margin:2px 0 8px}

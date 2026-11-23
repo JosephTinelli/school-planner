@@ -10,10 +10,41 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="app">
+
+<!-- ===== Schermata di accesso (login / registrazione) ===== -->
+<div id="loginOverlay" class="login-overlay">
+  <div class="login-box">
+    <img src="icons/icon-512.png" alt="" class="login-logo">
+    <h1 id="loginTitolo">School Planner</h1>
+    <p class="login-sub" id="loginSub">Istituto “Belluzzi da Vinci”</p>
+
+    <div id="loginForm" class="login-form">
+      <label>Nome e cognome<input id="lNome" placeholder="Es. Mario Rossi" autocomplete="off"></label>
+      <label>Password<input id="lPwd" type="password" placeholder="La tua password" autocomplete="off"></label>
+      <button class="btn pr" id="btnLogin">Accedi</button>
+      <p class="login-hint mu" id="loginHint">Prima volta? Crea un account.</p>
+      <button class="btn" id="btnVaiRegistra">Crea un nuovo account</button>
+    </div>
+
+    <div id="regForm" class="login-form" hidden>
+      <label>Nome e cognome<input id="rNome" placeholder="Es. Mario Rossi" autocomplete="off"></label>
+      <label>Password<input id="rPwd" type="password" placeholder="Minimo 4 caratteri" autocomplete="off"></label>
+      <label>Ripeti password<input id="rPwd2" type="password" placeholder="Conferma password" autocomplete="off"></label>
+      <button class="btn pr" id="btnRegistra">Crea account</button>
+      <button class="btn" id="btnVaiLogin">Hai già un account? Accedi</button>
+    </div>
+
+    <p class="login-foot mu">I dati restano salvati solo su questo dispositivo.</p>
+  </div>
+</div>
+
+<div class="app" id="appRoot" hidden>
   <header class="top">
     <div><h1 id="hTitolo">Calendario</h1><p>Istituto “Belluzzi da Vinci”</p></div>
-    <button class="ghost" id="btnOggi">Oggi</button>
+    <div class="top-az">
+      <button class="ghost" id="btnPosta" title="Controlla la posta in arrivo">📧<em id="mailBadge" hidden>0</em></button>
+      <button class="ghost" id="btnOggi">Oggi</button>
+    </div>
   </header>
 
   <main>
@@ -42,11 +73,40 @@
 
     <section id="v-impost" class="view">
       <div class="card set">
+        <h3>Account</h3>
+        <p class="mu small">Accesso effettuato come <b id="impNome">—</b>.</p>
+        <button class="btn" id="btnLogout">🔒 Esci (logout)</button>
+      </div>
+      <div class="card set">
         <h3>Profilo</h3>
-        <label>Nome e cognome<input id="sNome" placeholder="Es. Mario Rossi"></label>
         <label>Ruolo
           <select id="sRuolo"><option value="docente">Docente (può inserire e firmare)</option><option value="studente">Studente (sola lettura)</option></select>
         </label>
+      </div>
+      <div class="card set">
+        <h3>Account email</h3>
+        <p class="mu small">Collega la tua casella: le email in arrivo vengono lette e proposte come eventi.</p>
+        <label>Indirizzo email<input id="eAddr" placeholder="Es. mario.rossi@gmail.com"></label>
+        <div class="two">
+          <label>Server IMAP<input id="eHost" placeholder="imap.gmail.com"></label>
+          <label>Porta<input id="ePort" type="number" placeholder="993"></label>
+        </div>
+        <label>Utente (se diverso dall’indirizzo)<input id="eUser" placeholder="mario.rossi@gmail.com"></label>
+        <label>Password / password app<input id="ePwd" type="password" placeholder="Password dell’app"></label>
+        <label>Modalità
+          <select id="eMode">
+            <option value="demo">Demo (posta locale di esempio + incolla email)</option>
+            <option value="gmail">Gmail reale (OAuth, vedi nota sotto)</option>
+            <option value="imap">IMAP reale (tramite proxy, vedi nota)</option>
+          </select>
+        </label>
+        <label id="boxProxy" hidden>URL del proxy IMAP-HTTP<input id="eProxy" placeholder="https://mio-proxy.example/check"></label>
+        <label id="boxClient" hidden>Client ID OAuth Google<input id="eClientId" placeholder="xxxxx.apps.googleusercontent.com"></label>
+        <div class="row">
+          <button class="btn" id="btnSalvaEmail">💾 Salva account</button>
+          <button class="btn pr" id="btnControllaPosta">📧 Controlla posta</button>
+        </div>
+        <p class="mu small">Nota: i browser non possono collegarsi direttamente a un server IMAP. In modalità <b>Gmail</b> l'app usa le API Google (login OAuth, solo lettura): quando apri la Posta ti viene chiesto di autorizzare l'accesso, poi le email non lette vengono scaricate e proposte come eventi. Serve un <b>Client ID OAuth</b> (gratis, vedi la GUIDa per crearlo). In <b>IMAP</b> serve invece un proxy HTTP tuo. In <b>Demo</b> usi le email di esempio o incollare il testo di una vera email.</p>
       </div>
       <div class="card set">
         <h3>Aspetto</h3>
@@ -69,7 +129,7 @@
         <input type="file" id="fileImporta" accept=".json" hidden>
         <button class="btn danger" id="btnReset">🗑 Azzera tutti i dati</button>
       </div>
-      <p class="mu center">School Planner v2 · dati salvati su questo dispositivo</p>
+      <p class="mu center">School Planner v3 · dati salvati su questo dispositivo</p>
     </section>
   </main>
 
@@ -94,11 +154,13 @@
   </div>
   <div class="two">
     <label>Ora (facoltativa)<input id="fOra" type="time"></label>
-    <label>Classi / destinatari<input id="fClassi" placeholder="Es. 4A, 4B"></label>
+    <label>Luogo<input id="fLuogo" placeholder="Es. Aula magna"></label>
   </div>
+  <label>Classi / destinatari<input id="fClassi" placeholder="Es. 4A, 4B"></label>
   <label>N° circolare / allegato PDF<input id="fNum" placeholder="Es. Circ. n. 45 – circolare45.pdf"></label>
   <label>Allegato (PDF o immagine, max 10 MB)<input type="file" id="fFile" accept=".pdf,image/*"></label>
-<label class="chk" id="fRimBox" hidden><input type="checkbox" id="fRimuovi"> Rimuovi l’allegato attuale (<span id="fFileInfo"></span>)</label>
+  <p class="mu small" id="fAutoFillInfo" hidden>📖 Per le circolari: dopo aver scelto un PDF o una foto, i campi vengono compilati in automatico (le immagini sono lette con OCR).</p>
+  <label class="chk" id="fRimBox" hidden><input type="checkbox" id="fRimuovi"> Rimuovi l’allegato attuale (<span id="fFileInfo"></span>)</label>
   <label>Descrizione<textarea id="fDesc" rows="3"></textarea></label>
   <label class="chk"><input type="checkbox" id="fFirma"> Richiede presa visione (firma)</label>
   <label class="chk"><input type="checkbox" id="fUrg"> Segna come urgente</label>
@@ -111,8 +173,53 @@
   <div class="row" id="dAzioni"></div>
 </dialog>
 
+<!-- Posta in arrivo -->
+<dialog id="dlgPosta">
+  <h3>📧 Posta in arrivo</h3>
+  <p class="mu small" id="postaStato">Carico…</p>
+  <div id="postaLista"></div>
+  <div class="row">
+    <button class="btn" id="btnIncollaMail">✏️ Incolla email</button>
+    <button class="btn" id="btnChiudiPosta">Chiudi</button>
+  </div>
+</dialog>
+
+<!-- Incolla email manualmente -->
+<dialog id="dlgIncolla">
+  <h3>Incolla una email</h3>
+  <label>Mittente (facoltativo)<input id="incMitt" placeholder="Es. segreteria@belluzzi.edu"></label>
+  <label>Oggetto<input id="incOgg" placeholder="Oggetto dell’email"></label>
+  <label>Testo dell’email<textarea id="incCorpo" rows="6" placeholder="Incolla qui il corpo dell’email…"></textarea></label>
+  <div class="row">
+    <button class="btn" id="incAnnulla">Annulla</button>
+    <button class="btn pr" id="incAnalizza">Analizza e proponi evento</button>
+  </div>
+</dialog>
+
+<!-- Conferma evento proposto (da email) -->
+<dialog id="dlgConferma">
+  <h3>Confermi l’inserimento?</h3>
+  <p class="mu small">Ho letto l’email e compilato i campi. Puoi correggerli prima di salvare.</p>
+  <label>Titolo<input id="cTit"></label>
+  <div class="two">
+    <label>Tipo
+      <select id="cTipo"><option value="circolare">Circolare</option><option value="riunione">Riunione</option><option value="scadenza">Scadenza</option><option value="evento">Evento</option></select>
+    </label>
+    <label>Data<input id="cData" type="date"></label>
+  </div>
+  <div class="two">
+    <label>Ora (facoltativa)<input id="cOra" type="time"></label>
+    <label>Luogo<input id="cLuogo" placeholder="Es. Aula magna"></label>
+  </div>
+  <label>Classi / destinatari<input id="cClassi" placeholder="Es. 4A, 4B"></label>
+  <label>N° circolare<input id="cNum"></label>
+  <label>Descrizione<textarea id="cDesc" rows="3"></textarea></label>
+  <label class="chk"><input type="checkbox" id="cFirma"> Richiede presa visione (firma)</label>
+  <label class="chk"><input type="checkbox" id="cUrg"> Urgente</label>
+  <div class="row"><button class="btn danger" id="cAnnulla">Annulla</button><button class="btn pr" id="cConferma">Conferma e inserisci</button></div>
+</dialog>
+
 <div id="toast"></div>
 <script src="script.js"></script>
-<script src="smart.js"></script>
 </body>
 </html>
